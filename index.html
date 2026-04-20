@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#5b8cff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StudyPlan">
+<title>StudyPlan — BSc CS Sem V</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   ROOT & RESET
+══════════════════════════════════════════ */
+:root {
+  --bg:       #0d0f14;
+  --surf:     #13161e;
+  --surf2:    #1a1e2a;
+  --border:   #252a38;
+  --accent:   #5b8cff;
+  --green:    #43e8b0;
+  --red:      #ff6b6b;
+  --yellow:   #ffc147;
+  --purple:   #b464ff;
+  --text:     #e8ecf8;
+  --muted:    #6b748a;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+
+  --cg:  #5b8cff;
+  --cn:  #ff6b6b;
+  --rm:  #43e8b0;
+  --iot: #ffc147;
+  --ent: #b464ff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace}
+
+/* ══════════════════════════════════════════
+   SHELL
+══════════════════════════════════════════ */
+.shell{
+  display:flex;flex-direction:column;
+  height:100vh;height:100dvh;
+  max-width:480px;margin:0 auto;
+  background:var(--bg);
+  position:relative;overflow:hidden;
+}
+
+/* ── Top bar ── */
+.topbar{
+  padding: calc(var(--safe-top) + 14px) 18px 14px;
+  background:var(--surf);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  position:relative;z-index:10;
+}
+.topbar-left h1{
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.01em;
+}
+.topbar-left h1 span{color:var(--accent)}
+.topbar-left p{font-size:10px;color:var(--muted);letter-spacing:0.06em;margin-top:1px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+
+.icon-btn{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--surf2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;transition:background 0.15s;
+}
+.icon-btn:active{background:var(--border)}
+.icon-btn.notif-on{background:rgba(91,140,255,0.15);border-color:rgba(91,140,255,0.4)}
+
+/* ── Tab bar ── */
+.tabbar{
+  display:flex;
+  background:var(--surf);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.tab{
+  flex:1;padding:10px 4px 9px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:9px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;transition:color 0.15s;
+  border-bottom:2px solid transparent;
+}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-icon{font-size:18px}
+
+/* ── Pages ── */
+.pages{flex:1;overflow:hidden;position:relative}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px 14px calc(var(--safe-bot) + 16px);
+  display:none;
+  animation:slideIn 0.22s ease;
+}
+.page.active{display:block}
+
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══════════════════════════════════════════
+   HOME PAGE
+══════════════════════════════════════════ */
+.today-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.today-header h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
+.today-header .date-pill{
+  font-size:10px;background:var(--surf2);border:1px solid var(--border);
+  border-radius:20px;padding:4px 12px;color:var(--muted);letter-spacing:0.05em;
+}
+
+.next-up{
+  background:linear-gradient(135deg,rgba(91,140,255,0.18),rgba(91,140,255,0.06));
+  border:1px solid rgba(91,140,255,0.35);
+  border-radius:14px;padding:14px 16px;margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.next-up::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:100px;height:100px;border-radius:50%;
+  background:radial-gradient(circle,rgba(91,140,255,0.15),transparent 70%);
+}
+.next-up-label{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.next-up-time{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.02em}
+.next-up-title{font-size:13px;color:var(--text);margin-top:3px}
+.next-up-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.countdown{
+  margin-top:10px;font-size:11px;color:var(--accent);
+  display:flex;align-items:center;gap:6px;
+}
+.countdown-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.section-label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:4px}
+
+/* Module progress cards */
+.module-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.mod-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:12px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;
+}
+.mod-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.mod-info{flex:1;min-width:0}
+.mod-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mod-code{font-size:10px;color:var(--muted);margin-top:1px}
+.mod-sessions{font-size:10px;color:var(--muted);flex-shrink:0;text-align:right}
+
+/* ══════════════════════════════════════════
+   TIMETABLE PAGE
+══════════════════════════════════════════ */
+.day-tabs{
+  display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;
+  scrollbar-width:none;margin-bottom:6px;
+}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-chip{
+  flex-shrink:0;padding:7px 14px;border-radius:20px;
+  background:var(--surf);border:1px solid var(--border);
+  font-size:11px;font-family:'Syne',sans-serif;font-weight:600;
+  letter-spacing:0.04em;cursor:pointer;transition:all 0.15s;
+  white-space:nowrap;
+}
+.day-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.day-chip.today-chip{border-color:var(--green);color:var(--green)}
+.day-chip.today-chip.active{background:var(--green);color:#0d0f14}
+
+.schedule-list{display:flex;flex-direction:column;gap:8px}
+
+.sched-item{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:12px;padding:12px 14px;
+  display:flex;gap:12px;align-items:flex-start;
+  position:relative;overflow:hidden;
+}
+.sched-item::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;border-radius:12px 0 0 12px;
+}
+.sched-item.type-class::before{background:var(--muted)}
+.sched-item.type-break::before{background:#4a3a5a}
+.sched-item.type-lunch::before{background:#2a3a2a}
+.sched-item.type-free::before{background:var(--border)}
+.sched-item.type-rest::before{background:#2a3040}
+
+.sched-item.mod-cg::before{background:var(--cg)}
+.sched-item.mod-cn::before{background:var(--cn)}
+.sched-item.mod-rm::before{background:var(--rm)}
+.sched-item.mod-iot::before{background:var(--iot)}
+.sched-item.mod-ent::before{background:var(--ent)}
+
+.sched-time{
+  min-width:58px;font-size:10px;color:var(--muted);
+  padding-top:2px;line-height:1.4;flex-shrink:0;
+}
+.sched-body{flex:1;min-width:0}
+.sched-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;line-height:1.3}
+.sched-sub{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.03em}
+.sched-badge{
+  font-size:9px;letter-spacing:0.07em;text-transform:uppercase;
+  border-radius:4px;padding:2px 6px;margin-top:5px;display:inline-block;
+}
+.badge-class{background:rgba(255,255,255,0.06);color:var(--muted)}
+.badge-study{background:rgba(91,140,255,0.12);color:var(--accent)}
+.badge-break{background:rgba(74,58,90,0.3);color:#b464ff}
+.badge-rest{background:rgba(42,48,64,0.5);color:var(--muted)}
+
+.sched-item.now-active{
+  background:rgba(91,140,255,0.06);
+  border-color:rgba(91,140,255,0.3);
+}
+.now-tag{
+  position:absolute;top:10px;right:12px;
+  font-size:8px;letter-spacing:0.1em;text-transform:uppercase;
+  background:var(--accent);color:#fff;
+  border-radius:4px;padding:2px 7px;
+}
+
+/* ══════════════════════════════════════════
+   NOTIFICATIONS PAGE
+══════════════════════════════════════════ */
+.notif-hero{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:16px;padding:20px;margin-bottom:16px;
+  text-align:center;
+}
+.notif-hero .big-icon{font-size:40px;margin-bottom:10px}
+.notif-hero h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px}
+.notif-hero p{font-size:12px;color:var(--muted);line-height:1.6}
+
+.notif-toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;margin-bottom:8px;
+}
+.ntl{flex:1}
+.ntl-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600}
+.ntl-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+.toggle{
+  width:44px;height:26px;border-radius:13px;
+  background:var(--border);position:relative;cursor:pointer;
+  transition:background 0.2s;flex-shrink:0;
+}
+.toggle.on{background:var(--accent)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;background:#fff;
+  transition:transform 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+.toggle.on::after{transform:translateX(18px)}
+
+.notif-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.notif-item{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:10px;padding:11px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.ni-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ni-body{flex:1;min-width:0}
+.ni-title{font-size:12px;font-family:'Syne',sans-serif;font-weight:600}
+.ni-time{font-size:10px;color:var(--muted);margin-top:1px}
+.ni-status{font-size:9px;color:var(--green);letter-spacing:0.06em}
+
+.perm-btn{
+  width:100%;padding:14px;border-radius:12px;
+  background:var(--accent);color:#fff;border:none;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:0.04em;cursor:pointer;margin-top:12px;
+  transition:opacity 0.15s;
+}
+.perm-btn:active{opacity:0.8}
+.perm-btn.granted{background:rgba(67,232,176,0.15);color:var(--green);border:1px solid rgba(67,232,176,0.3)}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:calc(var(--safe-bot) + 72px);left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--surf2);border:1px solid var(--border);
+  border-radius:10px;padding:10px 18px;
+  font-size:12px;white-space:nowrap;
+  opacity:0;transition:all 0.25s;z-index:100;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV
+══════════════════════════════════════════ */
+.bottomnav{
+  display:flex;
+  background:var(--surf);
+  border-top:1px solid var(--border);
+  padding-bottom:calc(var(--safe-bot) + 4px);
+  flex-shrink:0;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 4px 8px;gap:3px;cursor:pointer;
+  font-size:9px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--muted);transition:color 0.15s;
+}
+.nav-item.active{color:var(--accent)}
+.nav-item .ni{font-size:20px}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Study<span>Plan</span></h1>
+      <p>BSc CS · Semester V</p>
+    </div>
+    <div class="topbar-right">
+      <div class="icon-btn" id="notifBtn" title="Notifications">🔔</div>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <div class="pages">
+
+    <!-- ── HOME ── -->
+    <div class="page active" id="page-home">
+      <div class="today-header">
+        <h2 id="todayHeading">Today</h2>
+        <div class="date-pill" id="datePill">—</div>
+      </div>
+
+      <!-- Next up card -->
+      <div class="next-up" id="nextUpCard">
+        <div class="next-up-label">⚡ Up Next</div>
+        <div class="next-up-time" id="nextUpTime">—</div>
+        <div class="next-up-title" id="nextUpTitle">Loading...</div>
+        <div class="next-up-sub" id="nextUpSub"></div>
+        <div class="countdown"><div class="countdown-dot"></div><span id="countdownText">—</span></div>
+      </div>
+
+      <div class="section-label">Your Modules</div>
+      <div class="module-grid">
+        <div class="mod-card"><div class="mod-dot" style="background:var(--cg)"></div><div class="mod-info"><div class="mod-name">Computer Graphics</div><div class="mod-code">351 CS 3101 · Mr. Stainslaus Phillimon</div></div><div class="mod-sessions">3×/week</div></div>
+        <div class="mod-card"><div class="mod-dot" style="background:var(--cn)"></div><div class="mod-info"><div class="mod-name">Computer Networks</div><div class="mod-code">352 CS 3102 · Mr. Joseph Mbando</div></div><div class="mod-sessions">4×/week</div></div>
+        <div class="mod-card"><div class="mod-dot" style="background:var(--rm)"></div><div class="mod-info"><div class="mod-name">Research Methodology</div><div class="mod-code">351 CS RM 3103 · Mr. Maxwel Pensulo</div></div><div class="mod-sessions">3×/week</div></div>
+        <div class="mod-card"><div class="mod-dot" style="background:var(--iot)"></div><div class="mod-info"><div class="mod-name">Internet of Things</div><div class="mod-code">354 CS 3104 · Ms. Ethel Chikhoswe</div></div><div class="mod-sessions">3×/week</div></div>
+        <div class="mod-card"><div class="mod-dot" style="background:var(--ent)"></div><div class="mod-info"><div class="mod-name">Entrepreneurship</div><div class="mod-code">351 SE 3105 · Staff</div></div><div class="mod-sessions">3×/week</div></div>
+      </div>
+    </div>
+
+    <!-- ── TIMETABLE ── -->
+    <div class="page" id="page-timetable">
+      <div class="day-tabs" id="dayTabs"></div>
+      <div class="schedule-list" id="scheduleList"></div>
+    </div>
+
+    <!-- ── NOTIFICATIONS ── -->
+    <div class="page" id="page-notifs">
+      <div class="notif-hero">
+        <div class="big-icon">🔔</div>
+        <h3>Reminders</h3>
+        <p>Get notified 10 minutes before every class and study session. Tap "Enable Notifications" to activate.</p>
+      </div>
+
+      <button class="perm-btn" id="permBtn">Enable Notifications</button>
+
+      <div style="height:16px"></div>
+      <div class="section-label">Reminder Settings</div>
+
+      <div class="notif-toggle-row">
+        <div class="ntl"><div class="ntl-title">Class Reminders</div><div class="ntl-sub">10 min before each class</div></div>
+        <div class="toggle on" id="toggleClass" data-key="classReminders"></div>
+      </div>
+      <div class="notif-toggle-row">
+        <div class="ntl"><div class="ntl-title">Study Reminders</div><div class="ntl-sub">5 min before study sessions</div></div>
+        <div class="toggle on" id="toggleStudy" data-key="studyReminders"></div>
+      </div>
+      <div class="notif-toggle-row">
+        <div class="ntl"><div class="ntl-title">Break Reminders</div><div class="ntl-sub">Reminder to take breaks</div></div>
+        <div class="toggle" id="toggleBreak" data-key="breakReminders"></div>
+      </div>
+
+      <div style="height:16px"></div>
+      <div class="section-label">Today's Scheduled Reminders</div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <div class="bottomnav">
+    <div class="nav-item active" data-page="home"><div class="ni">🏠</div>Home</div>
+    <div class="nav-item" data-page="timetable"><div class="ni">📅</div>Timetable</div>
+    <div class="nav-item" data-page="notifs"><div class="ni">🔔</div>Reminders</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA — Full weekly schedule
+══════════════════════════════════════════ */
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const SHORT_DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+const SCHEDULE = {
+  1: [ // Monday
+    {time:'07:30',end:'09:20',title:'Computer Graphics',sub:'351 CS 3101 · Periods I & II',type:'class',mod:'cg',tag:'🎓 Class'},
+    {time:'09:20',end:'10:15',title:'Computer Networks',sub:'352 CS 3102 · Period III',type:'class',mod:'cn',tag:'🎓 Class'},
+    {time:'10:15',end:'10:25',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'10:25',end:'12:15',title:'Internet of Things',sub:'354 CS 3104 · Periods IV & V',type:'class',mod:'iot',tag:'🎓 Class'},
+    {time:'12:15',end:'13:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'13:00',end:'14:00',title:'Study: Computer Networks',sub:'Review & Notes',type:'study',mod:'cn',tag:'📖 Study'},
+    {time:'14:00',end:'15:00',title:'Study: Computer Graphics',sub:'Algorithms Practice',type:'study',mod:'cg',tag:'💻 Study'},
+    {time:'15:00',end:'15:30',title:'Break',sub:'Walk & recharge',type:'break',tag:'🚶 Break'},
+    {time:'15:30',end:'16:30',title:'Study: Internet of Things',sub:'Review & Lab',type:'study',mod:'iot',tag:'🔧 Study'},
+    {time:'16:30',end:'17:30',title:'Flexible Revision',sub:'Any module — your choice',type:'study',mod:'cg',tag:'🔁 Revision'},
+    {time:'17:30',end:'22:00',title:'Evening — Personal Time',sub:'Dinner & wind down',type:'rest',tag:'🌙 Rest'},
+  ],
+  2: [ // Tuesday
+    {time:'07:30',end:'10:15',title:'Internet of Things',sub:'354 CS 3104 · Periods I, II & III',type:'class',mod:'iot',tag:'🎓 Class'},
+    {time:'10:15',end:'10:25',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'10:25',end:'12:15',title:'Computer Networks',sub:'352 CS 3102 · Periods IV & V',type:'class',mod:'cn',tag:'🎓 Class'},
+    {time:'12:15',end:'13:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'13:00',end:'14:30',title:'Study: IoT',sub:'Projects & Concept Deepdive',type:'study',mod:'iot',tag:'🔧 Study'},
+    {time:'14:30',end:'15:00',title:'Break',sub:'Short break',type:'break',tag:'🚶 Break'},
+    {time:'15:00',end:'16:30',title:'Study: Computer Networks',sub:'Past Questions',type:'study',mod:'cn',tag:'📝 Study'},
+    {time:'16:30',end:'17:30',title:'Study: Research Methodology',sub:'Reading session',type:'study',mod:'rm',tag:'📚 Study'},
+    {time:'17:30',end:'22:00',title:'Evening — Personal Time',sub:'Dinner & wind down',type:'rest',tag:'🌙 Rest'},
+  ],
+  3: [ // Wednesday
+    {time:'07:30',end:'09:20',title:'Entrepreneurship',sub:'351 SE 3105 · Periods I & II',type:'class',mod:'ent',tag:'🎓 Class'},
+    {time:'09:20',end:'10:15',title:'Computer Networks',sub:'352 CS 3102 · Period III',type:'class',mod:'cn',tag:'🎓 Class'},
+    {time:'10:15',end:'10:25',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'10:25',end:'12:15',title:'Research Methodology',sub:'351 CS RM 3103 · Periods IV & V',type:'class',mod:'rm',tag:'🎓 Class'},
+    {time:'12:15',end:'13:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'13:00',end:'14:00',title:'Study: Entrepreneurship',sub:'Case Studies',type:'study',mod:'ent',tag:'📖 Study'},
+    {time:'14:00',end:'15:30',title:'Study: Research Methodology',sub:'Notes & Writing',type:'study',mod:'rm',tag:'✍️ Study'},
+    {time:'15:30',end:'16:00',title:'Break',sub:'Short break',type:'break',tag:'🚶 Break'},
+    {time:'16:00',end:'17:30',title:'Study: Computer Networks',sub:'Lab / Exercises',type:'study',mod:'cn',tag:'💻 Study'},
+    {time:'17:30',end:'22:00',title:'Evening — Personal Time',sub:'Dinner & wind down',type:'rest',tag:'🌙 Rest'},
+  ],
+  4: [ // Thursday
+    {time:'07:30',end:'09:20',title:'Research Methodology',sub:'351 CS RM 3103 · Periods I & II',type:'class',mod:'rm',tag:'🎓 Class'},
+    {time:'09:20',end:'10:15',title:'Computer Graphics',sub:'351 CS 3101 · Period III',type:'class',mod:'cg',tag:'🎓 Class'},
+    {time:'10:15',end:'10:25',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'10:25',end:'12:15',title:'Free / Catch-Up',sub:'Open slot',type:'free',tag:'🕊 Free'},
+    {time:'12:15',end:'13:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'13:00',end:'14:30',title:'Study: Research Methodology',sub:'Draft / Proposal Work',type:'study',mod:'rm',tag:'✍️ Study'},
+    {time:'14:30',end:'15:30',title:'Study: Computer Graphics',sub:'CG Lab Practice',type:'study',mod:'cg',tag:'💻 Study'},
+    {time:'15:30',end:'16:00',title:'Break',sub:'Short break',type:'break',tag:'🚶 Break'},
+    {time:'16:00',end:'17:00',title:'Study: IoT',sub:'Concept Revision',type:'study',mod:'iot',tag:'🔧 Study'},
+    {time:'17:00',end:'17:30',title:'Study: Entrepreneurship',sub:'Quick Review',type:'study',mod:'ent',tag:'📖 Study'},
+    {time:'17:30',end:'22:00',title:'Evening — Personal Time',sub:'Dinner & wind down',type:'rest',tag:'🌙 Rest'},
+  ],
+  5: [ // Friday
+    {time:'07:30',end:'09:20',title:'Entrepreneurship',sub:'351 SE 3105 · Periods I & II',type:'class',mod:'ent',tag:'🎓 Class'},
+    {time:'09:20',end:'10:15',title:'Computer Networks',sub:'352 CS 3102 · Period III',type:'class',mod:'cn',tag:'🎓 Class'},
+    {time:'10:15',end:'10:25',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'10:25',end:'12:15',title:'Free / Catch-Up',sub:'Open slot',type:'free',tag:'🕊 Free'},
+    {time:'12:15',end:'13:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'13:00',end:'14:30',title:'Study: Computer Graphics',sub:'Weekly Deep Dive',type:'study',mod:'cg',tag:'💻 Study'},
+    {time:'14:30',end:'15:30',title:'Study: Computer Networks',sub:'Weekly Recap',type:'study',mod:'cn',tag:'📝 Study'},
+    {time:'15:30',end:'16:00',title:'Break',sub:'Short break',type:'break',tag:'🚶 Break'},
+    {time:'16:00',end:'17:00',title:'Study: Entrepreneurship',sub:'Weekly Review',type:'study',mod:'ent',tag:'📖 Study'},
+    {time:'17:00',end:'17:30',title:'End-of-Week Self Assessment',sub:'Reflection',type:'study',mod:'rm',tag:'📋 Reflection'},
+    {time:'17:30',end:'22:00',title:'Evening — Personal Time',sub:'Dinner & wind down',type:'rest',tag:'🌙 Rest'},
+  ],
+  6: [ // Saturday
+    {time:'07:00',end:'09:00',title:'Morning Routine',sub:'Breakfast & wake up',type:'rest',tag:'🌅 Morning'},
+    {time:'09:00',end:'11:00',title:'Study: Computer Graphics',sub:'Lab / Past Papers',type:'study',mod:'cg',tag:'💻 Study'},
+    {time:'11:00',end:'11:30',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'11:30',end:'13:00',title:'Study: Research Methodology',sub:'Writing Session',type:'study',mod:'rm',tag:'✍️ Study'},
+    {time:'13:00',end:'14:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'14:00',end:'15:30',title:'Study: IoT',sub:'Projects / Mock Questions',type:'study',mod:'iot',tag:'🔧 Study'},
+    {time:'15:30',end:'22:00',title:'Personal Time',sub:'Rest · Social · Hobbies',type:'rest',tag:'🎮 Free'},
+  ],
+  0: [ // Sunday
+    {time:'07:00',end:'09:30',title:'Slow Morning',sub:'Rest & breakfast',type:'rest',tag:'🌅 Morning'},
+    {time:'09:30',end:'11:30',title:'Study: Computer Networks',sub:'Full Chapter Review',type:'study',mod:'cn',tag:'📖 Study'},
+    {time:'11:30',end:'12:00',title:'Break',sub:'Short rest',type:'break',tag:'☕ Break'},
+    {time:'12:00',end:'13:00',title:'Study: Entrepreneurship',sub:'Business Models Reading',type:'study',mod:'ent',tag:'📚 Study'},
+    {time:'13:00',end:'14:00',title:'Lunch',sub:'Eat & rest',type:'lunch',tag:'🍽 Lunch'},
+    {time:'14:00',end:'15:00',title:'Weekly Review',sub:'All 5 modules — Flash Notes',type:'study',mod:'cg',tag:'🔁 Revision'},
+    {time:'15:00',end:'22:00',title:'Full Rest',sub:'No study — recharge for the week',type:'rest',tag:'🌿 Rest'},
+  ],
+};
+
+const MOD_COLORS = {cg:'#5b8cff',cn:'#ff6b6b',rm:'#43e8b0',iot:'#ffc147',ent:'#b464ff'};
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function toMins(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+function nowMins(){const n=new Date();return n.getHours()*60+n.getMinutes()}
+function fmtDate(d){return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'})}
+function showToast(msg,dur=2500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const pg=item.dataset.page;
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('page-'+pg).classList.add('active');
+    if(pg==='timetable') renderDayTabs();
+    if(pg==='notifs') renderNotifList();
+  });
+});
+
+/* ══════════════════════════════════════════
+   HOME — Next Up & Countdown
+══════════════════════════════════════════ */
+function updateHome(){
+  const now=new Date();
+  const todayIdx=now.getDay();
+  const nm=nowMins();
+  document.getElementById('todayHeading').textContent=DAYS[todayIdx];
+  document.getElementById('datePill').textContent=fmtDate(now);
+
+  const todaySched=SCHEDULE[todayIdx]||[];
+  let next=null;
+  for(const item of todaySched){
+    if(toMins(item.time)>nm){next=item;break}
+  }
+  // currently active
+  let current=null;
+  for(const item of todaySched){
+    if(toMins(item.time)<=nm && toMins(item.end)>nm){current=item;break}
+  }
+
+  const display = current || next;
+  if(display){
+    document.getElementById('nextUpTime').textContent=display.time;
+    document.getElementById('nextUpTitle').textContent=display.title;
+    document.getElementById('nextUpSub').textContent=display.sub||'';
+    if(current){
+      document.getElementById('countdownText').textContent='Happening now — ends '+current.end;
+    } else {
+      const diff=toMins(next.time)-nm;
+      const h=Math.floor(diff/60),m=diff%60;
+      document.getElementById('countdownText').textContent=
+        `Starts in ${h>0?h+'h ':''  }${m}min`;
+    }
+  } else {
+    document.getElementById('nextUpTitle').textContent='All sessions done for today 🎉';
+    document.getElementById('nextUpTime').textContent='—';
+    document.getElementById('countdownText').textContent='Great work today!';
+  }
+}
+updateHome();
+setInterval(updateHome, 30000);
+
+/* ══════════════════════════════════════════
+   TIMETABLE PAGE
+══════════════════════════════════════════ */
+let selectedDay = new Date().getDay();
+
+function renderDayTabs(){
+  const tabs=document.getElementById('dayTabs');
+  const today=new Date().getDay();
+  tabs.innerHTML='';
+  [1,2,3,4,5,6,0].forEach(d=>{
+    const chip=document.createElement('div');
+    chip.className='day-chip'+(d===selectedDay?' active':'')+(d===today?' today-chip':'');
+    chip.textContent=SHORT_DAYS[d];
+    chip.addEventListener('click',()=>{selectedDay=d;renderDayTabs();renderSchedule()});
+    tabs.appendChild(chip);
+  });
+  renderSchedule();
+}
+
+function renderSchedule(){
+  const list=document.getElementById('scheduleList');
+  const nm=nowMins();
+  const today=new Date().getDay();
+  const items=SCHEDULE[selectedDay]||[];
+  list.innerHTML='';
+  items.forEach(item=>{
+    const div=document.createElement('div');
+    const isNow=selectedDay===today && toMins(item.time)<=nm && toMins(item.end)>nm;
+    div.className='sched-item type-'+item.type+(item.mod?' mod-'+item.mod:'')+(isNow?' now-active':'');
+
+    const badgeClass = item.type==='class'?'badge-class':item.type==='study'?'badge-study':item.type==='break'||item.type==='lunch'?'badge-break':'badge-rest';
+    div.innerHTML=`
+      ${isNow?'<div class="now-tag">NOW</div>':''}
+      <div class="sched-time">${item.time}<br>${item.end}</div>
+      <div class="sched-body">
+        <div class="sched-title">${item.title}</div>
+        <div class="sched-sub">${item.sub||''}</div>
+        <span class="sched-badge ${badgeClass}">${item.tag}</span>
+      </div>
+    `;
+    list.appendChild(div);
+    if(isNow) setTimeout(()=>div.scrollIntoView({behavior:'smooth',block:'center'}),100);
+  });
+}
+
+/* ══════════════════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════════════════ */
+const SETTINGS = {classReminders:true, studyReminders:true, breakReminders:false};
+
+document.querySelectorAll('.toggle').forEach(t=>{
+  const key=t.dataset.key;
+  if(SETTINGS[key]) t.classList.add('on');
+  t.addEventListener('click',()=>{
+    SETTINGS[key]=!SETTINGS[key];
+    t.classList.toggle('on',SETTINGS[key]);
+    scheduleNotifications();
+    showToast(SETTINGS[key]?'Reminders enabled ✓':'Reminders paused');
+  });
+});
+
+let notifPermission = Notification.permission;
+
+function updatePermBtn(){
+  const btn=document.getElementById('permBtn');
+  if(notifPermission==='granted'){
+    btn.textContent='✅ Notifications Enabled';
+    btn.classList.add('granted');
+    document.getElementById('notifBtn').classList.add('notif-on');
+  } else {
+    btn.textContent='Enable Notifications';
+    btn.classList.remove('granted');
+  }
+}
+updatePermBtn();
+
+document.getElementById('permBtn').addEventListener('click',async()=>{
+  if(notifPermission==='granted'){showToast('Already enabled ✓');return}
+  const result=await Notification.requestPermission();
+  notifPermission=result;
+  updatePermBtn();
+  if(result==='granted'){
+    showToast('Notifications enabled! 🔔');
+    scheduleNotifications();
+  } else {
+    showToast('Permission denied. Enable in phone settings.');
+  }
+});
+
+document.getElementById('notifBtn').addEventListener('click',()=>{
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-page="notifs"]').classList.add('active');
+  renderNotifList();
+});
+
+function buildReminderList(){
+  const today=new Date().getDay();
+  const items=SCHEDULE[today]||[];
+  const reminders=[];
+  items.forEach(item=>{
+    if(item.type==='class' && SETTINGS.classReminders){
+      const mins=toMins(item.time)-10;
+      if(mins>=0){
+        const h=Math.floor(mins/60).toString().padStart(2,'0');
+        const m=(mins%60).toString().padStart(2,'0');
+        reminders.push({
+          time:`${h}:${m}`,title:`🎓 Class in 10 min`,
+          body:`${item.title} starts at ${item.time}`,
+          tag:'class-'+item.time, mod:item.mod, type:'class'
+        });
+      }
+    }
+    if(item.type==='study' && SETTINGS.studyReminders){
+      const mins=toMins(item.time)-5;
+      if(mins>=0){
+        const h=Math.floor(mins/60).toString().padStart(2,'0');
+        const m=(mins%60).toString().padStart(2,'0');
+        reminders.push({
+          time:`${h}:${m}`,title:`📖 Study time in 5 min`,
+          body:`${item.title} — ${item.sub}`,
+          tag:'study-'+item.time, mod:item.mod, type:'study'
+        });
+      }
+    }
+    if(item.type==='break' && SETTINGS.breakReminders){
+      reminders.push({
+        time:item.time,title:`☕ Take a break`,
+        body:'Time to rest and recharge',
+        tag:'break-'+item.time, type:'break'
+      });
+    }
+  });
+  return reminders;
+}
+
+function scheduleNotifications(){
+  if(notifPermission!=='granted') return;
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.ready.then(reg=>{
+      if(reg.active){
+        reg.active.postMessage({type:'SCHEDULE_NOTIFICATIONS',schedule:buildReminderList()});
+      }
+    });
+  }
+  renderNotifList();
+}
+
+function renderNotifList(){
+  const list=document.getElementById('notifList');
+  const reminders=buildReminderList();
+  const nm=nowMins();
+  list.innerHTML='';
+  if(reminders.length===0){
+    list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px 0;text-align:center">No reminders scheduled — enable toggles above</div>';
+    return;
+  }
+  reminders.forEach(r=>{
+    const past=toMins(r.time)<nm;
+    const color=r.mod?MOD_COLORS[r.mod]:'#6b748a';
+    const div=document.createElement('div');
+    div.className='notif-item';
+    div.innerHTML=`
+      <div class="ni-dot" style="background:${color}${past?';opacity:0.3':''}"></div>
+      <div class="ni-body">
+        <div class="ni-title" style="${past?'opacity:0.4':''}">${r.title}</div>
+        <div class="ni-time">${r.time} · ${r.body}</div>
+      </div>
+      <div class="ni-status">${past?'✓ done':notifPermission==='granted'?'⏳ set':'—'}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+/* ══════════════════════════════════════════
+   SERVICE WORKER REGISTRATION
+══════════════════════════════════════════ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(reg=>{
+        console.log('SW registered');
+        if(notifPermission==='granted') scheduleNotifications();
+      })
+      .catch(err=>console.log('SW error',err));
+  });
+}
+
+/* Initial renders */
+renderDayTabs();
+renderNotifList();
+</script>
+</body>
+</html>
